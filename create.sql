@@ -1,96 +1,82 @@
 -- Created by Vertabelo (http://vertabelo.com)
--- Last modification date: 2024-04-19 09:16:13.369
+-- Last modification date: 2021-04-05 12:56:53.13
 
 -- tables
--- Table: Animal
-CREATE TABLE Animal (
-    ID int  NOT NULL IDENTITY,
-    Name nvarchar(100)  NOT NULL,
-    AdmissionDate date  NOT NULL,
-    Owner_ID int  NOT NULL,
-    Animal_Class_ID int  NOT NULL,
-    CONSTRAINT Animal_pk PRIMARY KEY  (ID)
+-- Table: Order
+CREATE TABLE "Order" (
+    IdOrder int  NOT NULL IDENTITY,
+    IdProduct int  NOT NULL,
+    Amount int  NOT NULL,
+    CreatedAt datetime  NOT NULL,
+    FulfilledAt datetime  NULL,
+    CONSTRAINT Order_pk PRIMARY KEY  (IdOrder)
 );
 
--- Table: Animal_Class
-CREATE TABLE Animal_Class (
-    ID int  NOT NULL IDENTITY,
-    Name nvarchar(100)  NOT NULL,
-    CONSTRAINT Animal_Class_pk PRIMARY KEY  (ID)
+-- Table: Product
+CREATE TABLE Product (
+    IdProduct int  NOT NULL IDENTITY,
+    Name nvarchar(200)  NOT NULL,
+    Description nvarchar(200)  NOT NULL,
+    Price numeric(25,2)  NOT NULL,
+    CONSTRAINT Product_pk PRIMARY KEY  (IdProduct)
 );
 
--- Table: Owner
-CREATE TABLE Owner (
-    ID int  NOT NULL IDENTITY,
-    FirstName nvarchar(100)  NOT NULL,
-    LastName nvarchar(100)  NOT NULL,
-    CONSTRAINT Owner_pk PRIMARY KEY  (ID)
+-- Table: Product_Warehouse
+CREATE TABLE Product_Warehouse (
+    IdProductWarehouse int  NOT NULL IDENTITY,
+    IdWarehouse int  NOT NULL,
+    IdProduct int  NOT NULL,
+    IdOrder int  NOT NULL,
+    Amount int  NOT NULL,
+    Price numeric(25,2)  NOT NULL,
+    CreatedAt datetime  NOT NULL,
+    CONSTRAINT Product_Warehouse_pk PRIMARY KEY  (IdProductWarehouse)
 );
 
--- Table: Procedure
-CREATE TABLE "Procedure" (
-    ID int  NOT NULL IDENTITY,
-    Name nvarchar(100)  NOT NULL,
-    Description nvarchar(100)  NOT NULL,
-    CONSTRAINT Procedure_pk PRIMARY KEY  (ID)
-);
-
--- Table: Procedure_Animal
-CREATE TABLE Procedure_Animal (
-    Procedure_ID int  NOT NULL,
-    Animal_ID int  NOT NULL,
-    Date date  NOT NULL,
-    CONSTRAINT Procedure_Animal_pk PRIMARY KEY  (Procedure_ID,Animal_ID,Date)
+-- Table: Warehouse
+CREATE TABLE Warehouse (
+    IdWarehouse int  NOT NULL IDENTITY,
+    Name nvarchar(200)  NOT NULL,
+    Address nvarchar(200)  NOT NULL,
+    CONSTRAINT Warehouse_pk PRIMARY KEY  (IdWarehouse)
 );
 
 -- foreign keys
--- Reference: Animal_Animal_Class (table: Animal)
-ALTER TABLE Animal ADD CONSTRAINT Animal_Animal_Class
-    FOREIGN KEY (Animal_Class_ID)
-    REFERENCES Animal_Class (ID);
+-- Reference: Product_Warehouse_Order (table: Product_Warehouse)
+ALTER TABLE Product_Warehouse ADD CONSTRAINT Product_Warehouse_Order
+    FOREIGN KEY (IdOrder)
+    REFERENCES "Order" (IdOrder);
 
--- Reference: Animal_Owner (table: Animal)
-ALTER TABLE Animal ADD CONSTRAINT Animal_Owner
-    FOREIGN KEY (Owner_ID)
-    REFERENCES Owner (ID);
+-- Reference: Receipt_Product (table: Order)
+ALTER TABLE "Order" ADD CONSTRAINT Receipt_Product
+    FOREIGN KEY (IdProduct)
+    REFERENCES Product (IdProduct);
 
--- Reference: Procedure_Animal_Animal (table: Procedure_Animal)
-ALTER TABLE Procedure_Animal ADD CONSTRAINT Procedure_Animal_Animal
-    FOREIGN KEY (Animal_ID)
-    REFERENCES Animal (ID);
+-- Reference: _Product (table: Product_Warehouse)
+ALTER TABLE Product_Warehouse ADD CONSTRAINT _Product
+    FOREIGN KEY (IdProduct)
+    REFERENCES Product (IdProduct);
 
--- Reference: Procedure_Animal_Procedure (table: Procedure_Animal)
-ALTER TABLE Procedure_Animal ADD CONSTRAINT Procedure_Animal_Procedure
-    FOREIGN KEY (Procedure_ID)
-    REFERENCES "Procedure" (ID);
+-- Reference: _Warehouse (table: Product_Warehouse)
+ALTER TABLE Product_Warehouse ADD CONSTRAINT _Warehouse
+    FOREIGN KEY (IdWarehouse)
+    REFERENCES Warehouse (IdWarehouse);
 
 -- End of file.
 
-INSERT INTO Owner
-VALUES ('Jan', 'Kowalski');
-INSERT INTO Owner
-VALUES ('Anna', 'Nowak');
+GO
 
-INSERT INTO Animal_Class
-VALUES ('Dog');
-INSERT INTO Animal_Class
-VALUES ('Cat');
+INSERT INTO Warehouse(Name, Address)
+VALUES('Warsaw', 'Kwiatowa 12');
 
-INSERT INTO Animal
-VALUES ('Wanwan', '2024-04-19', 1, 1);
-INSERT INTO Animal
-VALUES ('Nyah', '2024-04-19', 2, 2);
+GO
 
-INSERT INTO [Procedure]
-VALUES ('Name1', 'Desc1');
-INSERT INTO [Procedure]
-VALUES ('Name2', 'Desc2');
-INSERT INTO [Procedure]
-VALUES ('Name3', 'Desc3');
+INSERT INTO Product(Name, Description, Price)
+VALUES ('Abacavir', '', 25.5),
+('Acyclovir', '', 45.0),
+('Allopurinol', '', 30.8);
 
-INSERT INTO Procedure_Animal
-VALUES (1, 1, '2024-04-21')
-INSERT INTO Procedure_Animal
-VALUES (2, 1, '2024-04-21')
-INSERT INTO Procedure_Animal
-VALUES (3, 1, '2024-04-21')
+GO
+
+INSERT INTO "Order"(IdProduct, Amount, CreatedAt)
+VALUES((SELECT IdProduct FROM Product WHERE Name='Abacavir'), 125, GETDATE());
